@@ -1,0 +1,23 @@
+<html lang="EN">
+<title>SSE Demo</title>
+<body>
+<h1>SSE Demo</h1>
+<script>
+    if (window.EventSource == null) {
+        alert('The browser does not support Server-Sent Events');
+    } else {
+        const eventSource = new EventSource('/sse/api/events?name=client1&conferenceId=100');
+        eventSource.onopen = () => console.log('connection is established');
+        eventSource.onerror = errorEvent => console.log('connection state: (0 — connecting, 1 — open, 2 — closed) '
+            + eventSource.readyState + ', error: ' + errorEvent.error);
+        eventSource.onmessage = event =>  {
+            console.log('id: ' + (event.lastEventId || 'N/A') + ', data: ' + event.data);
+            if (event.data.endsWith('.')) {
+                eventSource.close();
+                console.log('connection is closed');
+            }
+        };
+    }
+</script>
+</body>
+</html>
