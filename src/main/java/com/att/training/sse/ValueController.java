@@ -32,7 +32,7 @@ public class ValueController {
     private final Random random = new Random();
 
     @GetMapping(path = "events", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    SseEmitter sse(@RequestParam String name, @RequestParam int conferenceId) {
+    public SseEmitter sse(@RequestParam String name, @RequestParam int conferenceId) {
         Client client = buildClient(name, conferenceId);
         idToClients.computeIfAbsent(conferenceId, key -> new ConcurrentLinkedDeque<>())
                 .add(client);
