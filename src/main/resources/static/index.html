@@ -8,7 +8,7 @@
     } else {
         const eventSource = new EventSource('/sse/api/events?name=client1&conferenceId=100');
         eventSource.onopen = () => console.log('connection is established');
-        eventSource.onerror = errorEvent => console.log('connection state: (0 — connecting, 1 — open, 2 — closed) '
+        eventSource.onerror = errorEvent => console.log('connection state: (0 - connecting, 1 - open, 2 - closed) '
             + eventSource.readyState + ', error: ' + errorEvent.error);
         eventSource.onmessage = event =>  {
             console.log('id: ' + (event.lastEventId || 'N/A') + ', data: ' + event.data);

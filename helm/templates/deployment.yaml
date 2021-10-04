@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.app.name }}
+  labels:
+    app: {{ .Values.app.name }}
+spec:
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.app.name }}
+  strategy: { }
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.app.name }}
+      annotations:
+        rollme: {{ randAlphaNum 5 | quote }}
+    spec:
+      containers:
+      - name: {{ .Values.app.name }}
+        image: {{ .Values.containerImage }}
+        ports:
+        - name: http
+          containerPort: 8080
+        env:
+        - name: JAVA_TOOL_OPTIONS
+          value: "-XX:MaxRAMPercentage=60 -XX:MaxMetaspaceSize=64M -XX:MaxDirectMemorySize=10M
+           -XX:+HeapDumpOnOutOfMemoryError -XX:+UseG1GC -XX:+UseStringDeduplication
+           {{ if (.Values.debug | default false) }}-agentlib:jdwp=transport=dt_socket,server=y,address=5005,suspend=n,quiet=y{{ end }}"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "500m"
+          limits:
+            memory: "500Mi"
+            cpu: "1"
+        livenessProbe:
+          httpGet:
+            path: sse/actuator/health/liveness
+            port: http
+          initialDelaySeconds: 5
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: sse/actuator/health/readiness
+            port: http
+          initialDelaySeconds: 5
+          periodSeconds: 15

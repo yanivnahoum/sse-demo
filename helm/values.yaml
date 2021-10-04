@@ -1,0 +1,4 @@
+app:
+  name: "sse"
+replicas: 2
+containerImage: sse-demo/sse:1.0.0

@@ -1,0 +1,7 @@
+# Ignore everything
+*
+# Except the following:
+# Maven:
+!target/*.jar
+# Gradle:
+!build/libs/*.jar
