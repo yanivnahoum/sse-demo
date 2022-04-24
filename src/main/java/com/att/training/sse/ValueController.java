@@ -1,5 +1,6 @@
 package com.att.training.sse;
 
+import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
@@ -14,33 +15,29 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Deque;
-import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedDeque;
-
-import static java.util.stream.Collectors.toUnmodifiableList;
 
 @Slf4j
 @RestController
 @RequestMapping("api")
 public class ValueController {
 
-    private final Map<Integer, Deque<Client>> idToClients = new ConcurrentHashMap<>();
+    private final Map<Integer, Set<Client>> idToClients = new ConcurrentHashMap<>();
     private final Random random = new Random();
 
     @GetMapping(path = "events", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter sse(@RequestParam String name, @RequestParam int conferenceId) {
         Client client = buildClient(name, conferenceId);
-        idToClients.computeIfAbsent(conferenceId, key -> new ConcurrentLinkedDeque<>())
+        idToClients.computeIfAbsent(conferenceId, key -> ConcurrentHashMap.newKeySet())
                 .add(client);
         return client.getEmitter();
     }
 
     private Client buildClient(String name, int conferenceId) {
-        long timeout = Duration.ofMinutes(1).toMillis();
+        long timeout = Duration.ofHours(1).toMillis();
         var emitter = new SseEmitter(timeout);
         var client = new Client(name, conferenceId, emitter);
         emitter.onCompletion(() -> removeClient(client));
@@ -53,14 +50,11 @@ public class ValueController {
 
     @Scheduled(fixedRateString = "PT1S")
     void emitEvents() {
-        List<Client> allClients = idToClients.values()
-                .stream()
-                .flatMap(Deque::stream)
-                .collect(toUnmodifiableList());
         int value = random.nextInt(101);
-        for (var client : allClients) {
-            sendToClient(client, value);
-        }
+        idToClients.values()
+                .stream()
+                .flatMap(Set::stream)
+                .forEach(client -> sendToClient(client, value));
     }
 
     private void sendToClient(Client client, int value) {
@@ -85,10 +79,13 @@ public class ValueController {
 }
 
 @Value
+
 class Client {
     String name;
     int conferenceId;
+    @EqualsAndHashCode.Exclude
     @ToString.Exclude
     SseEmitter emitter;
+    @EqualsAndHashCode.Exclude
     Instant createdDate = Instant.now();
 }
