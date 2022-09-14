@@ -8,4 +8,4 @@
 ### Testing multiple clients
 1. Run the app
 2. In a terminal run `curl -v http://localhost:8080/sse/api/events?conferenceId=101&name=client1`
-2. In a second terminal run `curl -v http://local.intl.att.com/sse/api/events?conferenceId=101&name=client2`
+3. In a second terminal run `curl -v http://localhost:8080/sse/api/events?conferenceId=101&name=client2`

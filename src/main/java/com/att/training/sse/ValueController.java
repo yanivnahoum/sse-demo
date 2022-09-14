@@ -79,7 +79,6 @@ public class ValueController {
 }
 
 @Value
-
 class Client {
     String name;
     int conferenceId;
