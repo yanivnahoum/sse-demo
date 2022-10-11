@@ -66,7 +66,6 @@ public class ValueController {
             log.warn("sendToClient - sse emitter error:", e);
             removeClient(client);
         }
-
     }
 
     private void removeClient(Client client) {
